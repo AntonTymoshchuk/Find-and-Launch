@@ -1,0 +1,1763 @@
+﻿<Window x:Class="Find_and_Launch.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:system="clr-namespace:System;assembly=mscorlib"
+        xmlns:viewModels="clr-namespace:Find_and_Launch.ViewModels"
+        mc:Ignorable="d"
+        Title="Find and Launch" Width="740" Height="488"
+        WindowStyle="None" WindowStartupLocation="CenterScreen"
+        AllowsTransparency="True" Background="Transparent"
+        ShowInTaskbar="True" Topmost="False" SnapsToDevicePixels="False"
+        Activated="Window_Activated" Deactivated="Window_Deactivated">
+    <Window.DataContext>
+        <viewModels:GlobalViewModel x:Name="GlobalViewModel"/>
+    </Window.DataContext>
+    <Window.Resources>
+        <Style x:Key="ScrollBarThumb" TargetType="{x:Type Thumb}">
+            <Setter Property="OverridesDefaultStyle" Value="True"/>
+            <Setter Property="IsTabStop" Value="False"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="{x:Type Thumb}">
+                        <Border x:Name="border" SnapsToDevicePixels="True" Background="LightGray"
+                                Width="{TemplateBinding Width}" Height="{TemplateBinding Height}"/>
+                        <ControlTemplate.Triggers>
+                            <EventTrigger RoutedEvent="MouseEnter">
+                                <BeginStoryboard>
+                                    <Storyboard>
+                                        <ColorAnimation Storyboard.TargetName="border"
+                                                        Storyboard.TargetProperty="Background.Color"
+                                                        To="Gray" Duration="0:0:0.2"/>
+                                    </Storyboard>
+                                </BeginStoryboard>
+                            </EventTrigger>
+                            <EventTrigger RoutedEvent="MouseLeave">
+                                <BeginStoryboard>
+                                    <Storyboard>
+                                        <ColorAnimation Storyboard.TargetName="border"
+                                                        Storyboard.TargetProperty="Background.Color"
+                                                        To="LightGray" Duration="0:0:0.2"/>
+                                    </Storyboard>
+                                </BeginStoryboard>
+                            </EventTrigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+        <Style TargetType="{x:Type ScrollBar}">
+            <Setter Property="Stylus.IsPressAndHoldEnabled" Value="False"/>
+            <Setter Property="Stylus.IsFlicksEnabled" Value="False"/>
+            <Setter Property="Width" Value="10"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="{x:Type ScrollBar}">
+                        <Grid SnapsToDevicePixels="True" Background="Transparent">
+                            <Track x:Name="PART_Track" IsDirectionReversed="True"
+                                   IsEnabled="{TemplateBinding IsMouseOver}" Width="8"
+                                   HorizontalAlignment="Center">
+                                <Track.Thumb>
+                                    <Thumb Style="{StaticResource ScrollBarThumb}"/>
+                                </Track.Thumb>
+                            </Track>
+                        </Grid>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </Window.Resources>
+    <Border x:Name="BackgroundBorder" Width="720" Height="468" Background="White" Margin="0, 10, 0, 0"
+            HorizontalAlignment="Center" VerticalAlignment="Top" SnapsToDevicePixels="False">
+        <Border.Effect>
+            <DropShadowEffect Color="Black" Direction="0" ShadowDepth="0"
+                              BlurRadius="12" Opacity="0.4" RenderingBias="Performance"/>
+        </Border.Effect>
+        <Border.Style>
+            <Style TargetType="Border">
+                <Style.Triggers>
+                    <DataTrigger Binding="{Binding ElementName=RequestTextBox, Path=Tag}" Value="Filled">
+                        <DataTrigger.EnterActions>
+                            <BeginStoryboard>
+                                <Storyboard>
+                                    <DoubleAnimation Storyboard.TargetProperty="Height" Duration="0:0:0.5" To="468"/>
+                                </Storyboard>
+                            </BeginStoryboard>
+                        </DataTrigger.EnterActions>
+                        <DataTrigger.ExitActions>
+                            <BeginStoryboard>
+                                <Storyboard>
+                                    <DoubleAnimation Storyboard.TargetProperty="Height" Duration="0:0:0.5" To="48"/>
+                                </Storyboard>
+                            </BeginStoryboard>
+                        </DataTrigger.ExitActions>
+                    </DataTrigger>
+                    <DataTrigger Binding="{Binding ElementName=RequestTextBox, Path=Tag}" Value="Empty">
+                        <DataTrigger.EnterActions>
+                            <BeginStoryboard>
+                                <Storyboard>
+                                    <DoubleAnimation Storyboard.TargetProperty="Height" Duration="0:0:0.5" To="48"/>
+                                </Storyboard>
+                            </BeginStoryboard>
+                        </DataTrigger.EnterActions>
+                        <DataTrigger.ExitActions>
+                            <BeginStoryboard>
+                                <Storyboard>
+                                    <DoubleAnimation Storyboard.TargetProperty="Height" Duration="0:0:0.5" To="468"/>
+                                </Storyboard>
+                            </BeginStoryboard>
+                        </DataTrigger.ExitActions>
+                    </DataTrigger>
+                </Style.Triggers>
+            </Style>
+        </Border.Style>
+        <Grid SnapsToDevicePixels="True">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="48"/>
+                    <RowDefinition/>
+                </Grid.RowDefinitions>
+                <Grid Grid.Row="0" SnapsToDevicePixels="True">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="48"/>
+                        <ColumnDefinition/>
+                        <ColumnDefinition Width="152"/>
+                    </Grid.ColumnDefinitions>
+                <!--<Image Grid.Column="0" Source="/Images/Logo/Rocket2.png"
+                           Width="42" Height="42">
+                    <Image.Effect>
+                        <DropShadowEffect Color="Black" Direction="0" ShadowDepth="0"
+                                          BlurRadius="6" Opacity="0.4" RenderingBias="Quality"/>
+                    </Image.Effect>
+                </Image>-->
+                <StackPanel Grid.Column="1" Orientation="Horizontal">
+                    <TextBox x:Name="RequestTextBox" FontSize="20"
+                         BorderThickness="0" SnapsToDevicePixels="True" AcceptsTab="True"
+                         HorizontalAlignment="Left" VerticalAlignment="Center"
+                         PreviewKeyDown="RequestTextBox_PreviewKeyDown"
+                         TextChanged="RequestTextBox_TextChanged"
+                         MouseRightButtonUp="RequestTextBox_MouseRightButtonUp">
+                    </TextBox>
+                    <TextBlock Width="600" Text="{Binding PostRequestString}" FontSize="20" Background="White"
+                               Foreground="Gray" SnapsToDevicePixels="True" VerticalAlignment="Center" Cursor="IBeam"
+                               FontWeight="Light" MouseRightButtonUp="RequestTextBox_MouseRightButtonUp"/>
+                    <Popup x:Name="RequestTextBoxContextMenuPopup" Width="220" Height="230" Grid.Column="1" Placement="MousePoint"
+                       StaysOpen="False" PopupAnimation="Fade" AllowsTransparency="True" SnapsToDevicePixels="True">
+                        <Popup.Resources>
+                            <Style x:Key="ButtonBorderStyle" TargetType="Border">
+                                <Setter Property="Background" Value="White"/>
+                                <Setter Property="SnapsToDevicePixels" Value="True"/>
+                                <Style.Triggers>
+                                    <EventTrigger RoutedEvent="MouseEnter">
+                                        <BeginStoryboard>
+                                            <Storyboard>
+                                                <ColorAnimation Storyboard.TargetProperty="Background.Color" Duration="0:0:0.2" To="Gray"/>
+                                            </Storyboard>
+                                        </BeginStoryboard>
+                                    </EventTrigger>
+                                    <EventTrigger RoutedEvent="MouseLeave">
+                                        <BeginStoryboard>
+                                            <Storyboard>
+                                                <ColorAnimation Storyboard.TargetProperty="Background.Color" Duration="0:0:0.2" To="White"/>
+                                            </Storyboard>
+                                        </BeginStoryboard>
+                                    </EventTrigger>
+                                </Style.Triggers>
+                            </Style>
+                            <Style x:Key="TextBlockStyle" TargetType="TextBlock">
+                                <Setter Property="FontSize" Value="14"/>
+                                <Setter Property="Margin" Value="15, 0"/>
+                                <Setter Property="SnapsToDevicePixels" Value="True"/>
+                            </Style>
+                            <ControlTemplate x:Key="FirstButtonTemplate" TargetType="Button">
+                                <Border Style="{StaticResource ButtonBorderStyle}">
+                                    <ContentPresenter HorizontalAlignment="Left" VerticalAlignment="Center"/>
+                                </Border>
+                            </ControlTemplate>
+                            <ControlTemplate x:Key="MiddleButtonTemplate" TargetType="Button">
+                                <Border Style="{StaticResource ButtonBorderStyle}">
+                                    <ContentPresenter HorizontalAlignment="Left" VerticalAlignment="Center"/>
+                                </Border>
+                            </ControlTemplate>
+                            <ControlTemplate x:Key="LastButtonTemplate" TargetType="Button">
+                                <Border Style="{StaticResource ButtonBorderStyle}">
+                                    <ContentPresenter HorizontalAlignment="Left" VerticalAlignment="Center"/>
+                                </Border>
+                            </ControlTemplate>
+                        </Popup.Resources>
+                        <Border Width="200" Height="210" Background="White" SnapsToDevicePixels="True">
+                            <Border.Effect>
+                                <DropShadowEffect Color="Black" Direction="0" ShadowDepth="0"
+                                              BlurRadius="12" Opacity="0.4" RenderingBias="Performance"/>
+                            </Border.Effect>
+                            <Grid SnapsToDevicePixels="True">
+                                <Grid.RowDefinitions>
+                                    <RowDefinition/>
+                                    <RowDefinition/>
+                                    <RowDefinition/>
+                                    <RowDefinition/>
+                                    <RowDefinition/>
+                                    <RowDefinition/>
+                                    <RowDefinition/>
+                                </Grid.RowDefinitions>
+                                <Button Grid.Row="0" Template="{StaticResource FirstButtonTemplate}" Click="SelectAllButton_Click">
+                                    <TextBlock Text="Select all" Style="{StaticResource TextBlockStyle}"/>
+                                </Button>
+                                <Button Grid.Row="1" Template="{StaticResource MiddleButtonTemplate}" Click="CutButton_Click">
+                                    <TextBlock Text="Cut" Style="{StaticResource TextBlockStyle}"/>
+                                </Button>
+                                <Button Grid.Row="2" Template="{StaticResource MiddleButtonTemplate}" Click="CopyButton_Click">
+                                    <TextBlock Text="Copy" Style="{StaticResource TextBlockStyle}"/>
+                                </Button>
+                                <Button Grid.Row="3" Template="{StaticResource MiddleButtonTemplate}" Click="PasteButton_Click">
+                                    <TextBlock Text="Paste" Style="{StaticResource TextBlockStyle}"/>
+                                </Button>
+                                <Button Grid.Row="4" Template="{StaticResource MiddleButtonTemplate}" Click="DeleteButton_Click">
+                                    <TextBlock Text="Delete" Style="{StaticResource TextBlockStyle}"/>
+                                </Button>
+                                <Button Grid.Row="5" Template="{StaticResource MiddleButtonTemplate}" Click="UndoButton_Click">
+                                    <TextBlock Text="Undo" Style="{StaticResource TextBlockStyle}"/>
+                                </Button>
+                                <Button Grid.Row="6" Template="{StaticResource LastButtonTemplate}" Click="RedoButton_Click">
+                                    <TextBlock Text="Redo" Style="{StaticResource TextBlockStyle}"/>
+                                </Button>
+                            </Grid>
+                        </Border>
+                    </Popup>
+                </StackPanel>
+                <StackPanel Grid.Column="2" Orientation="Horizontal">
+                    <Button Width="36" Height="36" Margin="4, 6">
+                        <Button.Style>
+                            <Style TargetType="Button">
+                                <Setter Property="Template">
+                                    <Setter.Value>
+                                        <ControlTemplate TargetType="Button">
+                                            <Border Width="{TemplateBinding Width}" Height="{TemplateBinding Height}"
+                                                    Background="White" CornerRadius="19">
+                                                <Border.Effect>
+                                                    <DropShadowEffect Color="Black" Direction="0" ShadowDepth="0"
+                                                                  BlurRadius="6" Opacity="0.6" RenderingBias="Quality"/>
+                                                </Border.Effect>
+                                                <ContentPresenter Width="22" Height="22"/>
+                                            </Border>
+                                        </ControlTemplate>
+                                    </Setter.Value>
+                                </Setter>
+                            </Style>
+                        </Button.Style>
+                        <Button.Content>
+                            <Image Source="/Images/Common/Menu.png"/>
+                        </Button.Content>
+                    </Button>
+                    <Button Width="26" Height="26" Margin="4, 11">
+                        <Button.Style>
+                            <Style TargetType="Button">
+                                <Setter Property="Template">
+                                    <Setter.Value>
+                                        <ControlTemplate TargetType="Button">
+                                            <Border Width="{TemplateBinding Width}" Height="{TemplateBinding Height}"
+                                                Background="White" CornerRadius="18">
+                                                <Border.Effect>
+                                                    <DropShadowEffect Color="Black" Direction="0" ShadowDepth="0"
+                                                                  BlurRadius="6" Opacity="0.6" RenderingBias="Quality"/>
+                                                </Border.Effect>
+                                                <ContentPresenter Width="20" Height="20"/>
+                                            </Border>
+                                        </ControlTemplate>
+                                    </Setter.Value>
+                                </Setter>
+                            </Style>
+                        </Button.Style>
+                        <Button.Content>
+                            <Image Source="/Images/Common/Expand.png"/>
+                        </Button.Content>
+                    </Button>
+                    <Button Width="26" Height="26" Margin="4, 11">
+                        <Button.Style>
+                            <Style TargetType="Button">
+                                <Setter Property="Template">
+                                    <Setter.Value>
+                                        <ControlTemplate TargetType="Button">
+                                            <Border Width="{TemplateBinding Width}" Height="{TemplateBinding Height}"
+                                                Background="White" CornerRadius="18">
+                                                <Border.Effect>
+                                                    <DropShadowEffect Color="Black" Direction="0" ShadowDepth="0"
+                                                                  BlurRadius="6" Opacity="0.6" RenderingBias="Quality"/>
+                                                </Border.Effect>
+                                                <ContentPresenter Width="16" Height="16"/>
+                                            </Border>
+                                        </ControlTemplate>
+                                    </Setter.Value>
+                                </Setter>
+                            </Style>
+                        </Button.Style>
+                        <Button.Content>
+                            <Image Source="/Images/Common/Pin.png"/>
+                        </Button.Content>
+                    </Button>
+                    <Button Width="26" Height="26" Click="SettingsButton_Click" Margin="4, 11">
+                        <Button.Style>
+                            <Style TargetType="Button">
+                                <Setter Property="Template">
+                                    <Setter.Value>
+                                        <ControlTemplate TargetType="Button">
+                                            <Border Width="{TemplateBinding Width}" Height="{TemplateBinding Height}"
+                                                Background="White" CornerRadius="18">
+                                                <Border.Effect>
+                                                    <DropShadowEffect Color="Black" Direction="0" ShadowDepth="0"
+                                                                  BlurRadius="6" Opacity="0.6" RenderingBias="Quality"/>
+                                                </Border.Effect>
+                                                <ContentPresenter Width="16" Height="16"/>
+                                            </Border>
+                                        </ControlTemplate>
+                                    </Setter.Value>
+                                </Setter>
+                            </Style>
+                        </Button.Style>
+                        <Button.Content>
+                            <Image Source="/Images/Common/Close.png"/>
+                        </Button.Content>
+                    </Button>
+                </StackPanel>
+            </Grid>
+                <Grid Grid.Row="1" SnapsToDevicePixels="True">
+                <Image Source="Images/NotFound/NotFound.png" Width="608" Height="456"
+                       Visibility="{Binding NotFoundIllustrationVisibility}"/>
+                <Grid Visibility="{Binding ResultVisibility}">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition/>
+                        <ColumnDefinition Width="420"/>
+                    </Grid.ColumnDefinitions>
+                    <Border Width="290" Height="70" VerticalAlignment="Top" BorderThickness="0" Panel.ZIndex="2">
+                        <Border.Background>
+                            <LinearGradientBrush StartPoint="0.5, 0" EndPoint="0.5, 1">
+                                <GradientStop Color="White" Offset="0.5"/>
+                                <GradientStop Color="Transparent" Offset="1"/>
+                            </LinearGradientBrush>
+                        </Border.Background>
+                    </Border>
+                    <ScrollViewer x:Name="GlobalScrollViewer" HorizontalAlignment="Right" Width="290"
+                                  Panel.ZIndex="1">
+                        <StackPanel Orientation="Vertical">
+                            <Rectangle Height="70"/>
+                            <Grid>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition/>
+                                    <RowDefinition/>
+                                    <RowDefinition/>
+                                    <RowDefinition/>
+                                    <RowDefinition/>
+                                    <RowDefinition/>
+                                    <RowDefinition/>
+                                    <RowDefinition/>
+                                </Grid.RowDefinitions>
+                                <Grid Grid.Row="{Binding MathExpressionListOrder}" Visibility="{Binding MathExpressionListVisibility}">
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="70"/>
+                                        <RowDefinition/>
+                                    </Grid.RowDefinitions>
+                                    <Border Width="280" Height="50" Background="White" Margin="0, 10, 0, 10">
+                                        <Border.Effect>
+                                            <DropShadowEffect Color="Black" Direction="0" ShadowDepth="0"
+                                                      BlurRadius="12" Opacity="0.6"/>
+                                        </Border.Effect>
+                                        <TextBlock Text="Calculator" FontSize="28" FontWeight="Light" Foreground="DimGray"
+                                           VerticalAlignment="Center" HorizontalAlignment="Center">
+                                            <TextBlock.Effect>
+                                                <DropShadowEffect Color="Black" Direction="0" ShadowDepth="0"
+                                                          BlurRadius="4" Opacity="0.4" RenderingBias="Quality"/>
+                                            </TextBlock.Effect>
+                                        </TextBlock>
+                                    </Border>
+                                    <ListBox x:Name="MathExpressionListBox" Grid.Row="1" ItemsSource="{Binding MathExpressions}"
+                                             GotFocus="MathExpressionListBox_GotFocus" SelectionChanged="MathExpressionListBox_SelectionChanged">
+                                        <ListBox.DataContext>
+                                            <viewModels:MathExpressionListViewModel x:Name="MathExpressionListViewModel"/>
+                                        </ListBox.DataContext>
+                                        <ListBox.Style>
+                                            <Style TargetType="ListBox">
+                                                <Setter Property="Template">
+                                                    <Setter.Value>
+                                                        <ControlTemplate TargetType="ListBox">
+                                                            <Border Width="290">
+                                                                <ItemsPresenter/>
+                                                            </Border>
+                                                        </ControlTemplate>
+                                                    </Setter.Value>
+                                                </Setter>
+                                                <Setter Property="ItemContainerStyle">
+                                                    <Setter.Value>
+                                                        <Style TargetType="ListBoxItem">
+                                                            <EventSetter Event="MouseDoubleClick" Handler="ListBoxItem_MouseDoubleClick"/>
+                                                            <Setter Property="Template">
+                                                                <Setter.Value>
+                                                                    <ControlTemplate TargetType="ListBoxItem">
+                                                                        <Border Width="280" Height="40" Background="{TemplateBinding Background}"
+                                                                                Margin="0, 10" HorizontalAlignment="Center"
+                                                                                MouseRightButtonUp="Border_MouseRightButtonUp"
+                                                                                MouseLeftButtonDown="Border_MouseLeftButtonDown">
+                                                                            <Border.Effect>
+                                                                                <DropShadowEffect Color="Black" Direction="0" ShadowDepth="0"
+                                                                                          BlurRadius="12" Opacity="0.6"/>
+                                                                            </Border.Effect>
+                                                                            <!--<Border.Triggers>
+                                                                                <EventTrigger RoutedEvent="Loaded">
+                                                                                    <BeginStoryboard>
+                                                                                        <Storyboard>
+                                                                                            <DoubleAnimation Storyboard.TargetProperty="Opacity"
+                                                                                                             To="1" Duration="0:0:0.5"/>
+                                                                                        </Storyboard>
+                                                                                    </BeginStoryboard>
+                                                                                </EventTrigger>
+                                                                            </Border.Triggers>-->
+                                                                            <ContentPresenter/>
+                                                                        </Border>
+                                                                        <ControlTemplate.Triggers>
+                                                                            <Trigger Property="IsSelected" Value="True">
+                                                                                <Setter Property="Background" Value="LightGray"/>
+                                                                            </Trigger>
+                                                                            <Trigger Property="IsSelected" Value="False">
+                                                                                <Setter Property="Background" Value="White"/>
+                                                                            </Trigger>
+                                                                        </ControlTemplate.Triggers>
+                                                                    </ControlTemplate>
+                                                                </Setter.Value>
+                                                            </Setter>
+                                                        </Style>
+                                                    </Setter.Value>
+                                                </Setter>
+                                            </Style>
+                                        </ListBox.Style>
+                                        <ListBox.ItemTemplate>
+                                            <DataTemplate>
+                                                <Grid Width="280" Height="40">
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="40"/>
+                                                        <ColumnDefinition/>
+                                                    </Grid.ColumnDefinitions>
+                                                    <Image Grid.Column="0" Source="{Binding MediumImage}" Width="22" Height="22">
+                                                        <Image.Effect>
+                                                            <DropShadowEffect Color="Black" Direction="0" ShadowDepth="0"
+                                                                      BlurRadius="4" Opacity="0.4" RenderingBias="Quality"/>
+                                                        </Image.Effect>
+                                                    </Image>
+                                                    <StackPanel Grid.Column="1" Orientation="Horizontal">
+                                                        <StackPanel.Effect>
+                                                            <DropShadowEffect Color="Black" Direction="0" ShadowDepth="0"
+                                                                              BlurRadius="4" Opacity="0.4" RenderingBias="Quality"/>
+                                                        </StackPanel.Effect>
+                                                        <TextBlock Text="{Binding Expression}" FontSize="16" FontWeight="Light"
+                                                                   VerticalAlignment="Center" Foreground="DimGray"/>
+                                                        <TextBlock Text="=" FontSize="16" FontWeight="Light"
+                                                                   VerticalAlignment="Center" Foreground="DimGray"/>
+                                                        <TextBlock Text="{Binding Result}" FontSize="16" FontWeight="Light"
+                                                                   VerticalAlignment="Center" Foreground="DimGray"/>
+                                                    </StackPanel>
+                                                    <!--<TextBlock Grid.Column="1" Text="{Binding Result}" FontSize="16" FontWeight="Light"
+                                                               VerticalAlignment="Center" Foreground="DimGray">
+                                                        <TextBlock.Effect>
+                                                            
+                                                        </TextBlock.Effect>
+                                                    </TextBlock>-->
+                                                </Grid>
+                                            </DataTemplate>
+                                        </ListBox.ItemTemplate>
+                                    </ListBox>
+                                </Grid>
+
+                                <Grid Grid.Row="{Binding FileListOrder}" Visibility="{Binding FileListVisibility}">
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="70"/>
+                                        <RowDefinition/>
+                                    </Grid.RowDefinitions>
+                                    <Border Width="280" Height="50" Background="White" Margin="0, 10, 0, 10">
+                                        <Border.Effect>
+                                            <DropShadowEffect Color="Black" Direction="0" ShadowDepth="0"
+                                                      BlurRadius="12" Opacity="0.6"/>
+                                        </Border.Effect>
+                                        <TextBlock Text="Files" FontSize="28" FontWeight="Light" Foreground="DimGray"
+                                           VerticalAlignment="Center" HorizontalAlignment="Center">
+                                            <TextBlock.Effect>
+                                                <DropShadowEffect Color="Black" Direction="0" ShadowDepth="0"
+                                                          BlurRadius="4" Opacity="0.4" RenderingBias="Quality"/>
+                                            </TextBlock.Effect>
+                                        </TextBlock>
+                                    </Border>
+                                    <ListBox x:Name="FileListBox" Grid.Row="1" ItemsSource="{Binding Files}"
+                                     GotFocus="FileListBox_GotFocus" SelectionChanged="FileListBox_SelectionChanged">
+                                        <ListBox.DataContext>
+                                            <viewModels:FileListViewModel x:Name="FileListViewModel"/>
+                                        </ListBox.DataContext>
+                                        <ListBox.Style>
+                                            <Style TargetType="ListBox">
+                                                <Setter Property="Template">
+                                                    <Setter.Value>
+                                                        <ControlTemplate TargetType="ListBox">
+                                                            <Border Width="290">
+                                                                <ItemsPresenter/>
+                                                            </Border>
+                                                        </ControlTemplate>
+                                                    </Setter.Value>
+                                                </Setter>
+                                                <Setter Property="ItemContainerStyle">
+                                                    <Setter.Value>
+                                                        <Style TargetType="ListBoxItem">
+                                                            <EventSetter Event="MouseDoubleClick" Handler="ListBoxItem_MouseDoubleClick"/>
+                                                            <Setter Property="Template">
+                                                                <Setter.Value>
+                                                                    <ControlTemplate TargetType="ListBoxItem">
+                                                                        <Border Width="280" Height="40" Background="{TemplateBinding Background}"
+                                                                                Margin="0, 10" HorizontalAlignment="Center"
+                                                                                MouseRightButtonUp="Border_MouseRightButtonUp"
+                                                                                MouseLeftButtonDown="Border_MouseLeftButtonDown">
+                                                                            <Border.Effect>
+                                                                                <DropShadowEffect Color="Black" Direction="0" ShadowDepth="0"
+                                                                                          BlurRadius="12" Opacity="0.6"/>
+                                                                            </Border.Effect>
+                                                                            <!--<Border.Triggers>
+                                                                                <EventTrigger RoutedEvent="Loaded">
+                                                                                    <BeginStoryboard>
+                                                                                        <Storyboard>
+                                                                                            <DoubleAnimation Storyboard.TargetProperty="Opacity"
+                                                                                                             To="1" Duration="0:0:0.5"/>
+                                                                                        </Storyboard>
+                                                                                    </BeginStoryboard>
+                                                                                </EventTrigger>
+                                                                            </Border.Triggers>-->
+                                                                            <ContentPresenter/>
+                                                                        </Border>
+                                                                        <ControlTemplate.Triggers>
+                                                                            <Trigger Property="IsSelected" Value="True">
+                                                                                <Setter Property="Background" Value="LightGray"/>
+                                                                            </Trigger>
+                                                                            <Trigger Property="IsSelected" Value="False">
+                                                                                <Setter Property="Background" Value="White"/>
+                                                                            </Trigger>
+                                                                        </ControlTemplate.Triggers>
+                                                                    </ControlTemplate>
+                                                                </Setter.Value>
+                                                            </Setter>
+                                                        </Style>
+                                                    </Setter.Value>
+                                                </Setter>
+                                            </Style>
+                                        </ListBox.Style>
+                                        <ListBox.ItemTemplate>
+                                            <DataTemplate>
+                                                <Grid Width="280" Height="40">
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="40"/>
+                                                        <ColumnDefinition/>
+                                                    </Grid.ColumnDefinitions>
+                                                    <Image Grid.Column="0" Source="{Binding MediumImage}" Width="22" Height="22">
+                                                        <Image.Effect>
+                                                            <DropShadowEffect Color="Black" Direction="0" ShadowDepth="0"
+                                                                      BlurRadius="4" Opacity="0.4" RenderingBias="Quality"/>
+                                                        </Image.Effect>
+                                                    </Image>
+                                                    <StackPanel Grid.Column="1" Orientation="Horizontal">
+                                                        <TextBlock Text="{Binding BeginNamePart}" FontSize="16" FontWeight="Light"
+                                                           VerticalAlignment="Center" Foreground="DimGray">
+                                                            <TextBlock.Effect>
+                                                                <DropShadowEffect Color="Black" Direction="0" ShadowDepth="0"
+                                                                          BlurRadius="4" Opacity="0.4" RenderingBias="Quality"/>
+                                                            </TextBlock.Effect>
+                                                        </TextBlock>
+                                                        <TextBlock Text="{Binding RequestNamePart}" FontSize="16" FontWeight="Normal"
+                                                           VerticalAlignment="Center" Foreground="Black">
+                                                            <TextBlock.Effect>
+                                                                <DropShadowEffect Color="Black" Direction="0" ShadowDepth="0"
+                                                                          BlurRadius="4" Opacity="0.4" RenderingBias="Quality"/>
+                                                            </TextBlock.Effect>
+                                                        </TextBlock>
+                                                        <TextBlock Text="{Binding EndNamePart}" FontSize="16" FontWeight="Light"
+                                                           VerticalAlignment="Center" Foreground="DimGray">
+                                                            <TextBlock.Effect>
+                                                                <DropShadowEffect Color="Black" Direction="0" ShadowDepth="0"
+                                                                          BlurRadius="4" Opacity="0.4" RenderingBias="Quality"/>
+                                                            </TextBlock.Effect>
+                                                        </TextBlock>
+                                                    </StackPanel>
+                                                </Grid>
+                                            </DataTemplate>
+                                        </ListBox.ItemTemplate>
+                                    </ListBox>
+                                    <Popup x:Name="FileListBoxContextMenuPopup" Width="220" Height="230" Grid.Column="1"
+                                           Placement="MousePoint" StaysOpen="False" PopupAnimation="Fade"
+                                           AllowsTransparency="True" SnapsToDevicePixels="True">
+                                        <Popup.Resources>
+                                            <Style x:Key="ButtonBorderStyle" TargetType="Border">
+                                                <Setter Property="Background" Value="White"/>
+                                                <Setter Property="SnapsToDevicePixels" Value="True"/>
+                                                <Style.Triggers>
+                                                    <EventTrigger RoutedEvent="MouseEnter">
+                                                        <BeginStoryboard>
+                                                            <Storyboard>
+                                                                <ColorAnimation Storyboard.TargetProperty="Background.Color" Duration="0:0:0.2" To="Gray"/>
+                                                            </Storyboard>
+                                                        </BeginStoryboard>
+                                                    </EventTrigger>
+                                                    <EventTrigger RoutedEvent="MouseLeave">
+                                                        <BeginStoryboard>
+                                                            <Storyboard>
+                                                                <ColorAnimation Storyboard.TargetProperty="Background.Color" Duration="0:0:0.2" To="White"/>
+                                                            </Storyboard>
+                                                        </BeginStoryboard>
+                                                    </EventTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                            <Style x:Key="TextBlockStyle" TargetType="TextBlock">
+                                                <Setter Property="FontSize" Value="14"/>
+                                                <Setter Property="Margin" Value="15, 0"/>
+                                                <Setter Property="SnapsToDevicePixels" Value="True"/>
+                                            </Style>
+                                            <ControlTemplate x:Key="FirstButtonTemplate" TargetType="Button">
+                                                <Border Style="{StaticResource ButtonBorderStyle}">
+                                                    <ContentPresenter HorizontalAlignment="Left" VerticalAlignment="Center"/>
+                                                </Border>
+                                            </ControlTemplate>
+                                            <ControlTemplate x:Key="MiddleButtonTemplate" TargetType="Button">
+                                                <Border Style="{StaticResource ButtonBorderStyle}">
+                                                    <ContentPresenter HorizontalAlignment="Left" VerticalAlignment="Center"/>
+                                                </Border>
+                                            </ControlTemplate>
+                                            <ControlTemplate x:Key="LastButtonTemplate" TargetType="Button">
+                                                <Border Style="{StaticResource ButtonBorderStyle}">
+                                                    <ContentPresenter HorizontalAlignment="Left" VerticalAlignment="Center"/>
+                                                </Border>
+                                            </ControlTemplate>
+                                        </Popup.Resources>
+                                        <Border Width="200" Height="210" Background="White" SnapsToDevicePixels="True">
+                                            <Border.Effect>
+                                                <DropShadowEffect Color="Black" Direction="0" ShadowDepth="0"
+                                              BlurRadius="12" Opacity="0.4" RenderingBias="Performance"/>
+                                            </Border.Effect>
+                                            <Grid SnapsToDevicePixels="True">
+                                                <Grid.RowDefinitions>
+                                                    <RowDefinition/>
+                                                    <RowDefinition/>
+                                                    <RowDefinition/>
+                                                    <RowDefinition/>
+                                                    <RowDefinition/>
+                                                    <RowDefinition/>
+                                                    <RowDefinition/>
+                                                </Grid.RowDefinitions>
+                                                <Button Grid.Row="0" Template="{StaticResource FirstButtonTemplate}" Click="OpenFileButton_Click">
+                                                    <TextBlock Text="Open" Style="{StaticResource TextBlockStyle}"/>
+                                                </Button>
+                                                <Button Grid.Row="1" Template="{StaticResource MiddleButtonTemplate}" Click="OpenFileLocationFileButton_Click">
+                                                    <TextBlock Text="Open file location" Style="{StaticResource TextBlockStyle}"/>
+                                                </Button>
+                                                <Button Grid.Row="2" Template="{StaticResource MiddleButtonTemplate}" Click="CopyPathFileButton_Click">
+                                                    <TextBlock Text="Copy path" Style="{StaticResource TextBlockStyle}"/>
+                                                </Button>
+                                                <Button Grid.Row="3" Template="{StaticResource MiddleButtonTemplate}" Click="CopyFileButton_Click">
+                                                    <TextBlock Text="Copy" Style="{StaticResource TextBlockStyle}"/>
+                                                </Button>
+                                                <Button Grid.Row="4" Template="{StaticResource MiddleButtonTemplate}" Click="CreateShortcutFileButton_Click">
+                                                    <TextBlock Text="Create shortcut" Style="{StaticResource TextBlockStyle}"/>
+                                                </Button>
+                                            </Grid>
+                                        </Border>
+                                    </Popup>
+                                </Grid>
+
+                                <Grid Grid.Row="{Binding FolderListOrder}" Visibility="{Binding FolderListVisibility}">
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="70"/>
+                                        <RowDefinition/>
+                                    </Grid.RowDefinitions>
+                                    <Border Width="280" Height="50" Background="White" Margin="0, 10, 0, 10" CornerRadius="25">
+                                        <Border.Effect>
+                                            <DropShadowEffect Color="Black" Direction="0" ShadowDepth="0"
+                                                      BlurRadius="12" Opacity="0.6"/>
+                                        </Border.Effect>
+                                        <TextBlock Grid.Row="0" Text="Folders" FontSize="28" FontWeight="Light" Foreground="DimGray"
+                                           VerticalAlignment="Center" HorizontalAlignment="Center" Margin="10, 0">
+                                            <TextBlock.Effect>
+                                                <DropShadowEffect Color="Black" Direction="0" ShadowDepth="0"
+                                                          BlurRadius="4" Opacity="0.4" RenderingBias="Quality"/>
+                                            </TextBlock.Effect>
+                                        </TextBlock>
+                                    </Border>
+                                    <ListBox x:Name="FolderListBox" Grid.Row="1" ItemsSource="{Binding Folders}"
+                                     GotFocus="FolderListBox_GotFocus" SelectionChanged="FolderListBox_SelectionChanged">
+                                        <ListBox.DataContext>
+                                            <viewModels:FolderListViewModel x:Name="FolderListViewModel"/>
+                                        </ListBox.DataContext>
+                                        <ListBox.Style>
+                                            <Style TargetType="ListBox">
+                                                <Setter Property="Template">
+                                                    <Setter.Value>
+                                                        <ControlTemplate TargetType="ListBox">
+                                                            <Border Width="290">
+                                                                <ItemsPresenter/>
+                                                            </Border>
+                                                        </ControlTemplate>
+                                                    </Setter.Value>
+                                                </Setter>
+                                                <Setter Property="ItemContainerStyle">
+                                                    <Setter.Value>
+                                                        <Style TargetType="ListBoxItem">
+                                                            <EventSetter Event="MouseDoubleClick" Handler="ListBoxItem_MouseDoubleClick"/>
+                                                            <Setter Property="Template">
+                                                                <Setter.Value>
+                                                                    <ControlTemplate TargetType="ListBoxItem">
+                                                                        <Border Width="280" Height="40" Background="White" Margin="0, 10"
+                                                                        CornerRadius="20" HorizontalAlignment="Center">
+                                                                            <Border.Effect>
+                                                                                <DropShadowEffect Color="Black" Direction="0" ShadowDepth="0"
+                                                                                          BlurRadius="12" Opacity="0.6"/>
+                                                                            </Border.Effect>
+                                                                            <ContentPresenter/>
+                                                                        </Border>
+                                                                    </ControlTemplate>
+                                                                </Setter.Value>
+                                                            </Setter>
+                                                        </Style>
+                                                    </Setter.Value>
+                                                </Setter>
+                                            </Style>
+                                        </ListBox.Style>
+                                        <ListBox.ItemTemplate>
+                                            <DataTemplate>
+                                                <Grid Width="280" Height="40">
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="40"/>
+                                                        <ColumnDefinition/>
+                                                    </Grid.ColumnDefinitions>
+                                                    <Image Grid.Column="0" Source="{Binding MediumImage}" Width="22" Height="22">
+                                                        <Image.Effect>
+                                                            <DropShadowEffect Color="Black" Direction="0" ShadowDepth="0"
+                                                                      BlurRadius="4" Opacity="0.4" RenderingBias="Quality"/>
+                                                        </Image.Effect>
+                                                    </Image>
+                                                    <StackPanel Grid.Column="1" Orientation="Horizontal">
+                                                        <TextBlock Text="{Binding BeginNamePart}" FontSize="16" FontWeight="Light"
+                                                           VerticalAlignment="Center" Foreground="DimGray">
+                                                            <TextBlock.Effect>
+                                                                <DropShadowEffect Color="Black" Direction="0" ShadowDepth="0"
+                                                                          BlurRadius="4" Opacity="0.4" RenderingBias="Quality"/>
+                                                            </TextBlock.Effect>
+                                                        </TextBlock>
+                                                        <TextBlock Text="{Binding RequestNamePart}" FontSize="16" FontWeight="Normal"
+                                                           VerticalAlignment="Center" Foreground="Black">
+                                                            <TextBlock.Effect>
+                                                                <DropShadowEffect Color="Black" Direction="0" ShadowDepth="0"
+                                                                          BlurRadius="4" Opacity="0.4" RenderingBias="Quality"/>
+                                                            </TextBlock.Effect>
+                                                        </TextBlock>
+                                                        <TextBlock Text="{Binding EndNamePart}" FontSize="16" FontWeight="Light"
+                                                           VerticalAlignment="Center" Foreground="DimGray">
+                                                            <TextBlock.Effect>
+                                                                <DropShadowEffect Color="Black" Direction="0" ShadowDepth="0"
+                                                                          BlurRadius="4" Opacity="0.4" RenderingBias="Quality"/>
+                                                            </TextBlock.Effect>
+                                                        </TextBlock>
+                                                    </StackPanel>
+                                                </Grid>
+                                            </DataTemplate>
+                                        </ListBox.ItemTemplate>
+                                    </ListBox>
+                                </Grid>
+
+                                <Grid Grid.Row="{Binding MicrosoftStoreAppListOrder}" Visibility="{Binding MicrosoftStoreAppListVisibility}">
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="70"/>
+                                        <RowDefinition/>
+                                    </Grid.RowDefinitions>
+                                    <Border Width="280" Height="50" Background="White" Margin="0, 10, 0, 10">
+                                        <Border.Effect>
+                                            <DropShadowEffect Color="Black" Direction="0" ShadowDepth="0"
+                                                      BlurRadius="12" Opacity="0.6"/>
+                                        </Border.Effect>
+                                        <TextBlock Text="Microsoft Store apps" FontSize="28" FontWeight="Light" Foreground="DimGray"
+                                           VerticalAlignment="Center" HorizontalAlignment="Center">
+                                            <TextBlock.Effect>
+                                                <DropShadowEffect Color="Black" Direction="0" ShadowDepth="0"
+                                                          BlurRadius="4" Opacity="0.4" RenderingBias="Quality"/>
+                                            </TextBlock.Effect>
+                                        </TextBlock>
+                                    </Border>
+                                    <ListBox x:Name="MicrosoftStoreAppListBox" Grid.Row="1" ItemsSource="{Binding MicrosoftStoreApplications}"
+                                            GotFocus="MicrosoftStoreAppListBox_GotFocus" SelectionChanged="MicrosoftStoreAppListBox_SelectionChanged">
+                                        <ListBox.DataContext>
+                                            <viewModels:MicrosoftStoreAppsListViewModel x:Name="MicrosoftStoreAppsListViewModel"/>
+                                        </ListBox.DataContext>
+                                        <ListBox.Style>
+                                            <Style TargetType="ListBox">
+                                                <Setter Property="Template">
+                                                    <Setter.Value>
+                                                        <ControlTemplate TargetType="ListBox">
+                                                            <Border Width="290">
+                                                                <ItemsPresenter/>
+                                                            </Border>
+                                                        </ControlTemplate>
+                                                    </Setter.Value>
+                                                </Setter>
+                                                <Setter Property="ItemContainerStyle">
+                                                    <Setter.Value>
+                                                        <Style TargetType="ListBoxItem">
+                                                            <EventSetter Event="MouseDoubleClick" Handler="ListBoxItem_MouseDoubleClick"/>
+                                                            <Setter Property="Template">
+                                                                <Setter.Value>
+                                                                    <ControlTemplate TargetType="ListBoxItem">
+                                                                        <Border Width="280" Height="40" Background="{TemplateBinding Background}"
+                                                                                Margin="0, 10" HorizontalAlignment="Center"
+                                                                                MouseRightButtonUp="Border_MouseRightButtonUp"
+                                                                                MouseLeftButtonDown="Border_MouseLeftButtonDown">
+                                                                            <Border.Effect>
+                                                                                <DropShadowEffect Color="Black" Direction="0" ShadowDepth="0"
+                                                                                          BlurRadius="12" Opacity="0.6"/>
+                                                                            </Border.Effect>
+                                                                            <!--<Border.Triggers>
+                                                                                <EventTrigger RoutedEvent="Loaded">
+                                                                                    <BeginStoryboard>
+                                                                                        <Storyboard>
+                                                                                            <DoubleAnimation Storyboard.TargetProperty="Opacity"
+                                                                                                             To="1" Duration="0:0:0.5"/>
+                                                                                        </Storyboard>
+                                                                                    </BeginStoryboard>
+                                                                                </EventTrigger>
+                                                                            </Border.Triggers>-->
+                                                                            <ContentPresenter/>
+                                                                        </Border>
+                                                                        <ControlTemplate.Triggers>
+                                                                            <Trigger Property="IsSelected" Value="True">
+                                                                                <Setter Property="Background" Value="LightGray"/>
+                                                                            </Trigger>
+                                                                            <Trigger Property="IsSelected" Value="False">
+                                                                                <Setter Property="Background" Value="White"/>
+                                                                            </Trigger>
+                                                                        </ControlTemplate.Triggers>
+                                                                    </ControlTemplate>
+                                                                </Setter.Value>
+                                                            </Setter>
+                                                        </Style>
+                                                    </Setter.Value>
+                                                </Setter>
+                                            </Style>
+                                        </ListBox.Style>
+                                        <ListBox.ItemTemplate>
+                                            <DataTemplate>
+                                                <Grid Width="280" Height="40">
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="40"/>
+                                                        <ColumnDefinition/>
+                                                    </Grid.ColumnDefinitions>
+                                                    <Image Grid.Column="0" Source="{Binding MediumImage}" Width="22" Height="22">
+                                                        <Image.Effect>
+                                                            <DropShadowEffect Color="Black" Direction="0" ShadowDepth="0"
+                                                                      BlurRadius="4" Opacity="0.4" RenderingBias="Quality"/>
+                                                        </Image.Effect>
+                                                    </Image>
+                                                    <StackPanel Grid.Column="1" Orientation="Horizontal">
+                                                        <TextBlock Text="{Binding BeginNamePart}" FontSize="16" FontWeight="Light"
+                                                           VerticalAlignment="Center" Foreground="DimGray">
+                                                            <TextBlock.Effect>
+                                                                <DropShadowEffect Color="Black" Direction="0" ShadowDepth="0"
+                                                                          BlurRadius="4" Opacity="0.4" RenderingBias="Quality"/>
+                                                            </TextBlock.Effect>
+                                                        </TextBlock>
+                                                        <TextBlock Text="{Binding RequestNamePart}" FontSize="16" FontWeight="Normal"
+                                                           VerticalAlignment="Center" Foreground="Black">
+                                                            <TextBlock.Effect>
+                                                                <DropShadowEffect Color="Black" Direction="0" ShadowDepth="0"
+                                                                          BlurRadius="4" Opacity="0.4" RenderingBias="Quality"/>
+                                                            </TextBlock.Effect>
+                                                        </TextBlock>
+                                                        <TextBlock Text="{Binding EndNamePart}" FontSize="16" FontWeight="Light"
+                                                           VerticalAlignment="Center" Foreground="DimGray">
+                                                            <TextBlock.Effect>
+                                                                <DropShadowEffect Color="Black" Direction="0" ShadowDepth="0"
+                                                                          BlurRadius="4" Opacity="0.4" RenderingBias="Quality"/>
+                                                            </TextBlock.Effect>
+                                                        </TextBlock>
+                                                    </StackPanel>
+                                                </Grid>
+                                            </DataTemplate>
+                                        </ListBox.ItemTemplate>
+                                    </ListBox>
+                                </Grid>
+
+                                <Grid Grid.Row="{Binding ApplicationListOrder}" Visibility="{Binding ApplicationListVisibility}">
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="70"/>
+                                        <RowDefinition/>
+                                    </Grid.RowDefinitions>
+                                    <Border Width="280" Height="50" Background="White" Margin="0, 10, 0, 10" CornerRadius="25">
+                                        <Border.Effect>
+                                            <DropShadowEffect Color="Black" Direction="0" ShadowDepth="0"
+                                                      BlurRadius="12" Opacity="0.6"/>
+                                        </Border.Effect>
+                                        <TextBlock Grid.Row="0" Text="Applications" FontSize="28" FontWeight="Light" Foreground="DimGray"
+                                           VerticalAlignment="Center" HorizontalAlignment="Center" Margin="10, 0">
+                                            <TextBlock.Effect>
+                                                <DropShadowEffect Color="Black" Direction="0" ShadowDepth="0"
+                                                          BlurRadius="4" Opacity="0.4" RenderingBias="Quality"/>
+                                            </TextBlock.Effect>
+                                        </TextBlock>
+                                    </Border>
+                                    <ListBox x:Name="ApplicationListBox" Grid.Row="1" ItemsSource="{Binding Applications}"
+                                     GotFocus="ApplicationListBox_GotFocus" SelectionChanged="ApplicationListBox_SelectionChanged">
+                                        <ListBox.DataContext>
+                                            <viewModels:ApplicationListViewModel x:Name="ApplicationListViewModel"/>
+                                        </ListBox.DataContext>
+                                        <ListBox.Style>
+                                            <Style TargetType="ListBox">
+                                                <Setter Property="Template">
+                                                    <Setter.Value>
+                                                        <ControlTemplate TargetType="ListBox">
+                                                            <Border Width="290">
+                                                                <ItemsPresenter/>
+                                                            </Border>
+                                                        </ControlTemplate>
+                                                    </Setter.Value>
+                                                </Setter>
+                                                <Setter Property="ItemContainerStyle">
+                                                    <Setter.Value>
+                                                        <Style TargetType="ListBoxItem">
+                                                            <EventSetter Event="MouseDoubleClick" Handler="ListBoxItem_MouseDoubleClick"/>
+                                                            <Setter Property="Template">
+                                                                <Setter.Value>
+                                                                    <ControlTemplate TargetType="ListBoxItem">
+                                                                        <Border Width="280" Height="40" Background="White" Margin="0, 10"
+                                                                                CornerRadius="20" HorizontalAlignment="Center">
+                                                                            <Border.Effect>
+                                                                                <DropShadowEffect Color="Black" Direction="0" ShadowDepth="0"
+                                                                                          BlurRadius="12" Opacity="0.6"/>
+                                                                            </Border.Effect>
+                                                                            <ContentPresenter/>
+                                                                        </Border>
+                                                                    </ControlTemplate>
+                                                                </Setter.Value>
+                                                            </Setter>
+                                                        </Style>
+                                                    </Setter.Value>
+                                                </Setter>
+                                            </Style>
+                                        </ListBox.Style>
+                                        <ListBox.ItemTemplate>
+                                            <DataTemplate>
+                                                <Grid Width="300" Height="40">
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="40"/>
+                                                        <ColumnDefinition/>
+                                                    </Grid.ColumnDefinitions>
+                                                    <Image Grid.Column="0" Source="{Binding MediumImage}" Width="22" Height="22">
+                                                        <Image.Effect>
+                                                            <DropShadowEffect Color="Black" Direction="0" ShadowDepth="0"
+                                                                      BlurRadius="4" Opacity="0.4" RenderingBias="Quality"/>
+                                                        </Image.Effect>
+                                                    </Image>
+                                                    <StackPanel Grid.Column="1" Orientation="Horizontal">
+                                                        <TextBlock Text="{Binding BeginNamePart}" FontSize="16" FontWeight="Light"
+                                                           VerticalAlignment="Center" Foreground="DimGray">
+                                                            <TextBlock.Effect>
+                                                                <DropShadowEffect Color="Black" Direction="0" ShadowDepth="0"
+                                                                          BlurRadius="4" Opacity="0.4" RenderingBias="Quality"/>
+                                                            </TextBlock.Effect>
+                                                        </TextBlock>
+                                                        <TextBlock Text="{Binding RequestNamePart}" FontSize="16" FontWeight="Normal"
+                                                           VerticalAlignment="Center" Foreground="Black">
+                                                            <TextBlock.Effect>
+                                                                <DropShadowEffect Color="Black" Direction="0" ShadowDepth="0"
+                                                                          BlurRadius="4" Opacity="0.4" RenderingBias="Quality"/>
+                                                            </TextBlock.Effect>
+                                                        </TextBlock>
+                                                        <TextBlock Text="{Binding EndNamePart}" FontSize="16" FontWeight="Light"
+                                                           VerticalAlignment="Center" Foreground="DimGray">
+                                                            <TextBlock.Effect>
+                                                                <DropShadowEffect Color="Black" Direction="0" ShadowDepth="0"
+                                                                          BlurRadius="4" Opacity="0.4" RenderingBias="Quality"/>
+                                                            </TextBlock.Effect>
+                                                        </TextBlock>
+                                                    </StackPanel>
+                                                </Grid>
+                                            </DataTemplate>
+                                        </ListBox.ItemTemplate>
+                                    </ListBox>
+                                </Grid>
+
+                                <Grid Grid.Row="{Binding SettingsListOrder}" Visibility="{Binding SettingsListVisibility}">
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="70"/>
+                                        <RowDefinition/>
+                                    </Grid.RowDefinitions>
+                                    <Border Width="280" Height="50" Background="White" Margin="0, 10, 0, 10" CornerRadius="25">
+                                        <Border.Effect>
+                                            <DropShadowEffect Color="Black" Direction="0" ShadowDepth="0"
+                                                      BlurRadius="12" Opacity="0.6"/>
+                                        </Border.Effect>
+                                        <TextBlock Grid.Row="0" Text="Settings" FontSize="28" FontWeight="Light" Foreground="DimGray"
+                                           VerticalAlignment="Center" HorizontalAlignment="Center" Margin="10, 0">
+                                            <TextBlock.Effect>
+                                                <DropShadowEffect Color="Black" Direction="0" ShadowDepth="0"
+                                                          BlurRadius="4" Opacity="0.4" RenderingBias="Quality"/>
+                                            </TextBlock.Effect>
+                                        </TextBlock>
+                                    </Border>
+                                    <ListBox x:Name="SettingsListBox" Grid.Row="1" ItemsSource="{Binding Settings}"
+                                     GotFocus="SettingsListBox_GotFocus" SelectionChanged="SettingsListBox_SelectionChanged">
+                                        <ListBox.DataContext>
+                                            <viewModels:SettingsListViewModel x:Name="SettingsListViewModel"/>
+                                        </ListBox.DataContext>
+                                        <ListBox.Style>
+                                            <Style TargetType="ListBox">
+                                                <Setter Property="Template">
+                                                    <Setter.Value>
+                                                        <ControlTemplate TargetType="ListBox">
+                                                            <Border Width="290">
+                                                                <ItemsPresenter/>
+                                                            </Border>
+                                                        </ControlTemplate>
+                                                    </Setter.Value>
+                                                </Setter>
+                                                <Setter Property="ItemContainerStyle">
+                                                    <Setter.Value>
+                                                        <Style TargetType="ListBoxItem">
+                                                            <EventSetter Event="MouseDoubleClick" Handler="ListBoxItem_MouseDoubleClick"/>
+                                                            <Setter Property="Template">
+                                                                <Setter.Value>
+                                                                    <ControlTemplate TargetType="ListBoxItem">
+                                                                        <Border Width="280" Height="40" Background="White" Margin="0, 10"
+                                                                        CornerRadius="20" HorizontalAlignment="Center">
+                                                                            <Border.Effect>
+                                                                                <DropShadowEffect Color="Black" Direction="0" ShadowDepth="0"
+                                                                                          BlurRadius="12" Opacity="0.6"/>
+                                                                            </Border.Effect>
+                                                                            <ContentPresenter/>
+                                                                        </Border>
+                                                                    </ControlTemplate>
+                                                                </Setter.Value>
+                                                            </Setter>
+                                                        </Style>
+                                                    </Setter.Value>
+                                                </Setter>
+                                            </Style>
+                                        </ListBox.Style>
+                                        <ListBox.ItemTemplate>
+                                            <DataTemplate>
+                                                <Grid Width="300" Height="40">
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="40"/>
+                                                        <ColumnDefinition/>
+                                                    </Grid.ColumnDefinitions>
+                                                    <Image Grid.Column="0" Source="{Binding MediumImage}" Width="22" Height="22">
+                                                        <Image.Effect>
+                                                            <DropShadowEffect Color="Black" Direction="0" ShadowDepth="0"
+                                                                      BlurRadius="4" Opacity="0.4" RenderingBias="Quality"/>
+                                                        </Image.Effect>
+                                                    </Image>
+                                                    <StackPanel Grid.Column="1" Orientation="Horizontal">
+                                                        <TextBlock Text="{Binding BeginNamePart}" FontSize="16" FontWeight="Light"
+                                                           VerticalAlignment="Center" Foreground="DimGray">
+                                                            <TextBlock.Effect>
+                                                                <DropShadowEffect Color="Black" Direction="0" ShadowDepth="0"
+                                                                          BlurRadius="4" Opacity="0.4" RenderingBias="Quality"/>
+                                                            </TextBlock.Effect>
+                                                        </TextBlock>
+                                                        <TextBlock Text="{Binding RequestNamePart}" FontSize="16" FontWeight="Normal"
+                                                           VerticalAlignment="Center" Foreground="Black">
+                                                            <TextBlock.Effect>
+                                                                <DropShadowEffect Color="Black" Direction="0" ShadowDepth="0"
+                                                                          BlurRadius="4" Opacity="0.4" RenderingBias="Quality"/>
+                                                            </TextBlock.Effect>
+                                                        </TextBlock>
+                                                        <TextBlock Text="{Binding EndNamePart}" FontSize="16" FontWeight="Light"
+                                                           VerticalAlignment="Center" Foreground="DimGray">
+                                                            <TextBlock.Effect>
+                                                                <DropShadowEffect Color="Black" Direction="0" ShadowDepth="0"
+                                                                          BlurRadius="4" Opacity="0.4" RenderingBias="Quality"/>
+                                                            </TextBlock.Effect>
+                                                        </TextBlock>
+                                                    </StackPanel>
+                                                </Grid>
+                                            </DataTemplate>
+                                        </ListBox.ItemTemplate>
+                                    </ListBox>
+                                </Grid>
+
+                                <Grid Grid.Row="{Binding SystemListOrder}" Visibility="{Binding SystemListVisibility}">
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="70"/>
+                                        <RowDefinition/>
+                                    </Grid.RowDefinitions>
+                                    <Border Width="280" Height="50" Background="White" Margin="0, 10, 0, 10" CornerRadius="25">
+                                        <Border.Effect>
+                                            <DropShadowEffect Color="Black" Direction="0" ShadowDepth="0"
+                                                      BlurRadius="12" Opacity="0.6"/>
+                                        </Border.Effect>
+                                        <TextBlock Grid.Row="0" Text="Launch" FontSize="28" FontWeight="Light" Foreground="DimGray"
+                                           VerticalAlignment="Center" HorizontalAlignment="Center" Margin="10, 0">
+                                            <TextBlock.Effect>
+                                                <DropShadowEffect Color="Black" Direction="0" ShadowDepth="0"
+                                                          BlurRadius="4" Opacity="0.4" RenderingBias="Quality"/>
+                                            </TextBlock.Effect>
+                                        </TextBlock>
+                                    </Border>
+                                    <ListBox x:Name="SystemsListBox" Grid.Row="1" ItemsSource="{Binding Systems}"
+                                     GotFocus="SystemsListBox_GotFocus" SelectionChanged="SystemsListBox_SelectionChanged">
+                                        <ListBox.DataContext>
+                                            <viewModels:SystemListViewModel x:Name="SystemListViewModel"/>
+                                        </ListBox.DataContext>
+                                        <ListBox.Style>
+                                            <Style TargetType="ListBox">
+                                                <Setter Property="Template">
+                                                    <Setter.Value>
+                                                        <ControlTemplate TargetType="ListBox">
+                                                            <Border Width="290">
+                                                                <ItemsPresenter/>
+                                                            </Border>
+                                                        </ControlTemplate>
+                                                    </Setter.Value>
+                                                </Setter>
+                                                <Setter Property="ItemContainerStyle">
+                                                    <Setter.Value>
+                                                        <Style TargetType="ListBoxItem">
+                                                            <EventSetter Event="MouseDoubleClick" Handler="ListBoxItem_MouseDoubleClick"/>
+                                                            <Setter Property="Template">
+                                                                <Setter.Value>
+                                                                    <ControlTemplate TargetType="ListBoxItem">
+                                                                        <Border Width="280" Height="40" Background="White" Margin="0, 10"
+                                                                        CornerRadius="20" HorizontalAlignment="Center">
+                                                                            <Border.Effect>
+                                                                                <DropShadowEffect Color="Black" Direction="0" ShadowDepth="0"
+                                                                                          BlurRadius="12" Opacity="0.6"/>
+                                                                            </Border.Effect>
+                                                                            <ContentPresenter/>
+                                                                        </Border>
+                                                                    </ControlTemplate>
+                                                                </Setter.Value>
+                                                            </Setter>
+                                                        </Style>
+                                                    </Setter.Value>
+                                                </Setter>
+                                            </Style>
+                                        </ListBox.Style>
+                                        <ListBox.ItemTemplate>
+                                            <DataTemplate>
+                                                <Grid Width="300" Height="40">
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="40"/>
+                                                        <ColumnDefinition/>
+                                                    </Grid.ColumnDefinitions>
+                                                    <Image Grid.Column="0" Source="{Binding MediumImage}" Width="22" Height="22">
+                                                        <Image.Effect>
+                                                            <DropShadowEffect Color="Black" Direction="0" ShadowDepth="0"
+                                                                      BlurRadius="4" Opacity="0.4" RenderingBias="Quality"/>
+                                                        </Image.Effect>
+                                                    </Image>
+                                                    <StackPanel Grid.Column="1" Orientation="Horizontal">
+                                                        <TextBlock Text="{Binding Name}" FontSize="16" FontWeight="Light"
+                                                           VerticalAlignment="Center" Foreground="DimGray">
+                                                            <TextBlock.Effect>
+                                                                <DropShadowEffect Color="Black" Direction="0" ShadowDepth="0"
+                                                                          BlurRadius="4" Opacity="0.4" RenderingBias="Quality"/>
+                                                            </TextBlock.Effect>
+                                                        </TextBlock>
+                                                        <TextBlock Text=" − " FontSize="16" FontWeight="Light"
+                                                           VerticalAlignment="Center" Foreground="DimGray">
+                                                            <TextBlock.Effect>
+                                                                <DropShadowEffect Color="Black" Direction="0" ShadowDepth="0"
+                                                                          BlurRadius="4" Opacity="0.4" RenderingBias="Quality"/>
+                                                            </TextBlock.Effect>
+                                                        </TextBlock>
+                                                        <TextBlock Text="{Binding DisplayRequest}" FontSize="16" FontWeight="Normal"
+                                                           VerticalAlignment="Center" Foreground="Black">
+                                                            <TextBlock.Effect>
+                                                                <DropShadowEffect Color="Black" Direction="0" ShadowDepth="0"
+                                                                          BlurRadius="4" Opacity="0.4" RenderingBias="Quality"/>
+                                                            </TextBlock.Effect>
+                                                        </TextBlock>
+                                                    </StackPanel>
+                                                </Grid>
+                                            </DataTemplate>
+                                        </ListBox.ItemTemplate>
+                                    </ListBox>
+                                </Grid>
+
+                                <Grid Grid.Row="{Binding WebServiceListOrder}" Visibility="{Binding WebServiceListVisibility}">
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="70"/>
+                                        <RowDefinition/>
+                                    </Grid.RowDefinitions>
+                                    <Border Width="280" Height="50" Background="White" Margin="0, 10, 0, 10" CornerRadius="25">
+                                        <Border.Effect>
+                                            <DropShadowEffect Color="Black" Direction="0" ShadowDepth="0"
+                                                      BlurRadius="12" Opacity="0.6"/>
+                                        </Border.Effect>
+                                        <TextBlock Grid.Row="0" Text="Google" FontSize="28" FontWeight="Light" Foreground="DimGray"
+                                           VerticalAlignment="Center" HorizontalAlignment="Center" Margin="10, 0">
+                                            <TextBlock.Effect>
+                                                <DropShadowEffect Color="Black" Direction="0" ShadowDepth="0"
+                                                          BlurRadius="4" Opacity="0.4" RenderingBias="Quality"/>
+                                            </TextBlock.Effect>
+                                        </TextBlock>
+                                    </Border>
+                                    <ListBox x:Name="WebServiceListBox" Grid.Row="1" ItemsSource="{Binding WebServices}"
+                                     GotFocus="WebServiceListBox_GotFocus" SelectionChanged="WebServiceListBox_SelectionChanged">
+                                        <ListBox.DataContext>
+                                            <viewModels:WebServiceListViewModel x:Name="WebServiceListViewModel"/>
+                                        </ListBox.DataContext>
+                                        <ListBox.Style>
+                                            <Style TargetType="ListBox">
+                                                <Setter Property="Template">
+                                                    <Setter.Value>
+                                                        <ControlTemplate TargetType="ListBox">
+                                                            <Border Width="290">
+                                                                <ItemsPresenter/>
+                                                            </Border>
+                                                        </ControlTemplate>
+                                                    </Setter.Value>
+                                                </Setter>
+                                                <Setter Property="ItemContainerStyle">
+                                                    <Setter.Value>
+                                                        <Style TargetType="ListBoxItem">
+                                                            <EventSetter Event="MouseDoubleClick" Handler="ListBoxItem_MouseDoubleClick"/>
+                                                            <Setter Property="Template">
+                                                                <Setter.Value>
+                                                                    <ControlTemplate TargetType="ListBoxItem">
+                                                                        <Border Width="280" Height="40" Background="White" Margin="0, 10"
+                                                                        CornerRadius="20" HorizontalAlignment="Center">
+                                                                            <Border.Effect>
+                                                                                <DropShadowEffect Color="Black" Direction="0" ShadowDepth="0"
+                                                                                          BlurRadius="12" Opacity="0.6"/>
+                                                                            </Border.Effect>
+                                                                            <ContentPresenter/>
+                                                                        </Border>
+                                                                    </ControlTemplate>
+                                                                </Setter.Value>
+                                                            </Setter>
+                                                        </Style>
+                                                    </Setter.Value>
+                                                </Setter>
+                                            </Style>
+                                        </ListBox.Style>
+                                        <ListBox.ItemTemplate>
+                                            <DataTemplate>
+                                                <Grid Width="300" Height="40">
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="40"/>
+                                                        <ColumnDefinition/>
+                                                    </Grid.ColumnDefinitions>
+                                                    <Image Grid.Column="0" Source="{Binding MediumImage}" Width="22" Height="22">
+                                                        <Image.Effect>
+                                                            <DropShadowEffect Color="Black" Direction="0" ShadowDepth="0"
+                                                                      BlurRadius="4" Opacity="0.4" RenderingBias="Quality"/>
+                                                        </Image.Effect>
+                                                    </Image>
+                                                    <StackPanel Grid.Column="1" Orientation="Horizontal">
+                                                        <TextBlock Text="{Binding Name}" FontSize="16" FontWeight="Light"
+                                                           VerticalAlignment="Center" Foreground="DimGray">
+                                                            <TextBlock.Effect>
+                                                                <DropShadowEffect Color="Black" Direction="0" ShadowDepth="0"
+                                                                          BlurRadius="4" Opacity="0.4" RenderingBias="Quality"/>
+                                                            </TextBlock.Effect>
+                                                        </TextBlock>
+                                                        <TextBlock Text=" − " FontSize="16" FontWeight="Light"
+                                                           VerticalAlignment="Center" Foreground="DimGray">
+                                                            <TextBlock.Effect>
+                                                                <DropShadowEffect Color="Black" Direction="0" ShadowDepth="0"
+                                                                          BlurRadius="4" Opacity="0.4" RenderingBias="Quality"/>
+                                                            </TextBlock.Effect>
+                                                        </TextBlock>
+                                                        <TextBlock Text="{Binding DisplayRequest}" FontSize="16" FontWeight="Normal"
+                                                           VerticalAlignment="Center" Foreground="Black">
+                                                            <TextBlock.Effect>
+                                                                <DropShadowEffect Color="Black" Direction="0" ShadowDepth="0"
+                                                                          BlurRadius="4" Opacity="0.4" RenderingBias="Quality"/>
+                                                            </TextBlock.Effect>
+                                                        </TextBlock>
+                                                    </StackPanel>
+                                                </Grid>
+                                            </DataTemplate>
+                                        </ListBox.ItemTemplate>
+                                    </ListBox>
+                                </Grid>
+
+                            </Grid>
+                            <Rectangle Height="70"/>
+                        </StackPanel>
+                    </ScrollViewer>
+                    <Border Width="290" Height="70" VerticalAlignment="Bottom" BorderThickness="0"
+                        CornerRadius="0, 0, 0, 25" Panel.ZIndex="2">
+                        <Border.Background>
+                            <LinearGradientBrush StartPoint="0.5, 0" EndPoint="0.5, 1">
+                                <GradientStop Color="Transparent" Offset="0"/>
+                                <GradientStop Color="White" Offset="0.5"/>
+                            </LinearGradientBrush>
+                        </Border.Background>
+                    </Border>
+
+                    <Border Grid.Column="1" Width="400" Height="400" Background="White">
+                        <Border.Effect>
+                            <DropShadowEffect Color="Black" Direction="0" ShadowDepth="0"
+                                          BlurRadius="12" Opacity="0.6" RenderingBias="Performance"/>
+                        </Border.Effect>
+                        <Grid>
+                            <Border Width="400" Height="400" Visibility="{Binding MathExpressionInfoVisibility}">
+                                <Grid VerticalAlignment="Center">
+                                    <Grid.DataContext>
+                                        <viewModels:MathExpressionInfoViewModel x:Name="MathExpressionInfoViewModel"/>
+                                    </Grid.DataContext>
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="120"/>
+                                        <RowDefinition Height="92"/>
+                                        <RowDefinition/>
+                                    </Grid.RowDefinitions>
+                                    <Image Grid.Row="0" Source="{Binding LargeImage}" Width="100" Height="100"/>
+                                    <StackPanel Grid.Row="1" Orientation="Vertical" VerticalAlignment="Top">
+                                        <TextBlock Text="{Binding Name}" FontSize="22" TextAlignment="Center"
+                                           Foreground="Black" FontWeight="Normal"/>
+                                        <Line X1="30" Y1="8" X2="370" Y2="8" Stroke="Black"
+                                              Visibility="{Binding LineVisibility}"/>
+                                    </StackPanel>
+                                    <StackPanel Grid.Row="2">
+                                        <TextBlock Text="{Binding Description}" FontSize="16" TextAlignment="Left" Width="380"
+                                           Foreground="Black" TextWrapping="Wrap"/>
+                                        <TextBlock x:Name="MathExpressionHyperlinkTextBlock" Text="Learn more..." FontSize="16"
+                                           TextAlignment="Left" HorizontalAlignment="Left" Margin="60, 0, 0, 0" Width="92"
+                                           MouseLeftButtonUp="MathExpressionHyperlinkTextBlock_MouseLeftButtonUp">
+                                            <TextBlock.Style>
+                                                <Style TargetType="TextBlock">
+                                                    <Style.Triggers>
+                                                        <Trigger Property="IsMouseOver" Value="True">
+                                                            <Setter Property="Foreground" Value="Blue"/>
+                                                            <Setter Property="TextDecorations" Value="Underline"/>
+                                                            <Setter Property="Cursor" Value="Hand"/>
+                                                        </Trigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </TextBlock.Style>
+                                        </TextBlock>
+                                    </StackPanel>
+                                </Grid>
+                            </Border>
+
+                            <Border Width="400" Height="400" Visibility="{Binding FileInfoVisibility}">
+                                <Grid VerticalAlignment="Center">
+                                    <Grid.DataContext>
+                                        <viewModels:FileInfoViewModel x:Name="FileInfoViewModel"/>
+                                    </Grid.DataContext>
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="120"/>
+                                        <RowDefinition Height="92"/>
+                                        <RowDefinition/>
+                                    </Grid.RowDefinitions>
+                                    <Image Grid.Row="0" Source="{Binding LargeImage}"
+                                           Width="{Binding LargeImageWidth}" Height="{Binding LargeImageHeight}"/>
+                                    <StackPanel Grid.Row="1" Orientation="Vertical" VerticalAlignment="Top">
+                                        <TextBlock Text="{Binding Name}" FontSize="22" TextAlignment="Center"
+                                           Foreground="Black" FontWeight="Normal"/>
+                                        <TextBlock Text="{Binding Type}" FontSize="18" TextAlignment="Center"
+                                           Foreground="DimGray" FontWeight="Thin"/>
+                                        <TextBlock Text="{Binding FullName}" FontSize="14" TextAlignment="Center"
+                                                   Foreground="Black" FontWeight="Thin"/>
+                                        <Line X1="30" Y1="8" X2="370" Y2="8" Stroke="Black"
+                                              Visibility="{Binding LineVisibility}"/>
+                                    </StackPanel>
+                                    <Grid Grid.Row="2">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition/>
+                                            <ColumnDefinition Width="20"/>
+                                            <ColumnDefinition/>
+                                        </Grid.ColumnDefinitions>
+                                        <StackPanel Grid.Column="0" HorizontalAlignment="Right" VerticalAlignment="Top">
+                                            <TextBlock Text="Extension" FontSize="14" TextAlignment="Right"
+                                               Foreground="Black" FontWeight="Light" Visibility="{Binding ExtensionVisibility}"/>
+                                            <TextBlock Text="Size" FontSize="14" TextAlignment="Right"
+                                               Foreground="Black" FontWeight="Light" Visibility="{Binding SizeVisibility}"/>
+                                            <TextBlock Text="Attributes" FontSize="14" TextAlignment="Right"
+                                               Foreground="Black" FontWeight="Light" Visibility="{Binding AttributesVisibility}"/>
+                                            <TextBlock Text="Owner" FontSize="14" TextAlignment="Right"
+                                               Foreground="Black" FontWeight="Light" Visibility="{Binding OwnerVisibility}"/>
+                                            <TextBlock Text="Computer" FontSize="14" TextAlignment="Right"
+                                               Foreground="Black" FontWeight="Light" Visibility="{Binding ComputerVisibility}"/>
+                                            <TextBlock Text="Date created" FontSize="14" TextAlignment="Right"
+                                               Foreground="Black" FontWeight="Light" Visibility="{Binding CreationTimeVisibility}"/>
+                                            <TextBlock Text="Date accessed" FontSize="14" TextAlignment="Right"
+                                               Foreground="Black" FontWeight="Light" Visibility="{Binding LastAccessTimeVisibility}"/>
+                                            <TextBlock Text="Date modified" FontSize="14" TextAlignment="Right"
+                                               Foreground="Black" FontWeight="Light" Visibility="{Binding LastWriteTimeVisibility}"/>
+                                        </StackPanel>
+                                        <StackPanel Grid.Column="2" HorizontalAlignment="Left" VerticalAlignment="Top">
+                                            <TextBlock Text="{Binding Extension}" FontSize="14" TextAlignment="Left"
+                                               Foreground="DimGray" FontWeight="Thin" Visibility="{Binding ExtensionVisibility}"/>
+                                            <TextBlock Text="{Binding Size}" FontSize="14" TextAlignment="Left"
+                                               Foreground="DimGray" FontWeight="Thin" Visibility="{Binding SizeVisibility}"/>
+                                            <TextBlock Text="{Binding Attributes}" FontSize="14" TextAlignment="Left"
+                                               Foreground="DimGray" FontWeight="Thin" Visibility="{Binding AttributesVisibility}"/>
+                                            <TextBlock Text="{Binding Owner}" FontSize="14" TextAlignment="Left"
+                                               Foreground="DimGray" FontWeight="Thin" Visibility="{Binding OwnerVisibility}"/>
+                                            <TextBlock Text="{Binding Computer}" FontSize="14" TextAlignment="Left"
+                                               Foreground="DimGray" FontWeight="Thin" Visibility="{Binding ComputerVisibility}"/>
+                                            <TextBlock Text="{Binding CreationTime}" FontSize="14" TextAlignment="Left"
+                                               Foreground="DimGray" FontWeight="Thin" Visibility="{Binding CreationTimeVisibility}"/>
+                                            <TextBlock Text="{Binding LastAccessTime}" FontSize="14" TextAlignment="Left"
+                                               Foreground="DimGray" FontWeight="Thin" Visibility="{Binding LastAccessTimeVisibility}"/>
+                                            <TextBlock Text="{Binding LastWriteTime}" FontSize="14" TextAlignment="Left"
+                                               Foreground="DimGray" FontWeight="Thin" Visibility="{Binding LastWriteTimeVisibility}"/>
+                                        </StackPanel>
+                                    </Grid>
+                                </Grid>
+                            </Border>
+
+                            <Border Width="500" Height="500" Visibility="{Binding FolderInfoVisibility}">
+                                <Grid VerticalAlignment="Center">
+                                    <Grid.DataContext>
+                                        <viewModels:FolderInfoViewModel x:Name="FolderInfoViewModel"/>
+                                    </Grid.DataContext>
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="120"/>
+                                        <RowDefinition Height="72"/>
+                                        <RowDefinition/>
+                                    </Grid.RowDefinitions>
+                                    <Image Grid.Row="0" Source="{Binding LargeImage}" Width="100" Height="100"/>
+                                    <StackPanel Grid.Row="1" Orientation="Vertical" VerticalAlignment="Top">
+                                        <TextBlock Text="{Binding Name}" FontSize="24" TextAlignment="Center"
+                                           Foreground="Black" FontWeight="Normal"/>
+                                        <TextBlock Text="{Binding Type}" FontSize="20" TextAlignment="Center"
+                                           Foreground="DimGray" FontWeight="Thin"/>
+                                        <Line X1="60" Y1="5" X2="440" Y2="5" Stroke="Black"/>
+                                    </StackPanel>
+                                    <Grid Grid.Row="2">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition/>
+                                            <ColumnDefinition Width="20"/>
+                                            <ColumnDefinition/>
+                                        </Grid.ColumnDefinitions>
+                                        <StackPanel Grid.Column="0" HorizontalAlignment="Right" VerticalAlignment="Center">
+                                            <TextBlock Text="Elements" FontSize="16" TextAlignment="Right"
+                                               Foreground="Black" FontWeight="Normal"/>
+                                            <TextBlock Text="Size" FontSize="16" TextAlignment="Right"
+                                               Foreground="Black" FontWeight="Normal"/>
+                                            <TextBlock Text="Attributes" FontSize="16" TextAlignment="Right"
+                                               Foreground="Black" FontWeight="Normal"/>
+                                            <TextBlock Text="Owner" FontSize="16" TextAlignment="Right"
+                                               Foreground="Black" FontWeight="Normal"/>
+                                            <TextBlock Text="Computer" FontSize="16" TextAlignment="Right"
+                                               Foreground="Black" FontWeight="Normal"/>
+                                            <TextBlock Text="Date created" FontSize="16" TextAlignment="Right"
+                                               Foreground="Black" FontWeight="Normal"/>
+                                            <TextBlock Text="Date accessed" FontSize="16" TextAlignment="Right"
+                                               Foreground="Black" FontWeight="Normal"/>
+                                            <TextBlock Text="Date modified" FontSize="16" TextAlignment="Right"
+                                               Foreground="Black" FontWeight="Normal"/>
+                                        </StackPanel>
+                                        <StackPanel Grid.Column="2" HorizontalAlignment="Left" VerticalAlignment="Center">
+                                            <TextBlock Text="{Binding Elements}" FontSize="16" TextAlignment="Left"
+                                               Foreground="DimGray" FontWeight="Thin"/>
+                                            <TextBlock Text="{Binding Size}" FontSize="16" TextAlignment="Left"
+                                               Foreground="DimGray" FontWeight="Thin"/>
+                                            <TextBlock Text="{Binding Attributes}" FontSize="16" TextAlignment="Left"
+                                               Foreground="DimGray" FontWeight="Thin"/>
+                                            <TextBlock Text="{Binding Owner}" FontSize="16" TextAlignment="Left"
+                                               Foreground="DimGray" FontWeight="Thin"/>
+                                            <TextBlock Text="{Binding Computer}" FontSize="16" TextAlignment="Left"
+                                               Foreground="DimGray" FontWeight="Thin"/>
+                                            <TextBlock Text="{Binding CreationTime}" FontSize="16" TextAlignment="Left"
+                                               Foreground="DimGray" FontWeight="Thin"/>
+                                            <TextBlock Text="{Binding LastAccessTime}" FontSize="16" TextAlignment="Left"
+                                               Foreground="DimGray" FontWeight="Thin"/>
+                                            <TextBlock Text="{Binding LastWriteTime}" FontSize="16" TextAlignment="Left"
+                                               Foreground="DimGray" FontWeight="Thin"/>
+                                        </StackPanel>
+                                    </Grid>
+                                </Grid>
+                            </Border>
+
+                            <Border Width="400" Height="400" Visibility="{Binding MicrosoftStoreAppInfoVisibility}">
+                                <Grid VerticalAlignment="Center">
+                                    <Grid.DataContext>
+                                        <viewModels:MicrosoftStoreAppInfoViewModel x:Name="MicrosoftStoreAppInfoViewModel"/>
+                                    </Grid.DataContext>
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="120"/>
+                                        <RowDefinition Height="72"/>
+                                        <RowDefinition/>
+                                    </Grid.RowDefinitions>
+                                    <Image Grid.Row="0" Source="{Binding LargeImage}" Width="100" Height="100">
+                                        <Image.Effect>
+                                            <DropShadowEffect Color="Black" Direction="0" ShadowDepth="0" Opacity="0.6" BlurRadius="6"/>
+                                        </Image.Effect>
+                                    </Image>
+                                    <StackPanel Grid.Row="1" Orientation="Vertical" VerticalAlignment="Top">
+                                        <TextBlock Text="{Binding Name}" FontSize="22" TextAlignment="Center"
+                                           Foreground="Black" FontWeight="Normal"/>
+                                        <TextBlock Text="{Binding Type}" FontSize="18" TextAlignment="Center"
+                                           Foreground="DimGray" FontWeight="Thin"/>
+                                        <Line X1="30" Y1="8" X2="370" Y2="8" Stroke="Black"
+                                              Visibility="{Binding LineVisibility}"/>
+                                    </StackPanel>
+                                    <Grid Grid.Row="2">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition/>
+                                            <ColumnDefinition Width="20"/>
+                                            <ColumnDefinition/>
+                                        </Grid.ColumnDefinitions>
+                                        <StackPanel Grid.Column="0" HorizontalAlignment="Right" VerticalAlignment="Top">
+                                            <TextBlock Text="Publisher" FontSize="14" TextAlignment="Right"
+                                                       Foreground="Black" FontWeight="Light"/>
+                                            <TextBlock Text="Version" FontSize="14" TextAlignment="Right"
+                                                       Foreground="Black" FontWeight="Light"/>
+                                            <TextBlock Text="Architecture" FontSize="14" TextAlignment="Right"
+                                                       Foreground="Black" FontWeight="Light"/>
+                                            <TextBlock Text="Description" FontSize="14" TextAlignment="Right"
+                                                       Foreground="Black" FontWeight="Light"/>
+                                        </StackPanel>
+                                        <StackPanel Grid.Column="2" HorizontalAlignment="Left" VerticalAlignment="Top">
+                                            <TextBlock Text="{Binding Publisher}" FontSize="14" TextAlignment="Left"
+                                                       Foreground="DimGray" FontWeight="Thin"/>
+                                            <TextBlock Text="{Binding Version}" FontSize="14" TextAlignment="Left"
+                                                       Foreground="DimGray" FontWeight="Thin"/>
+                                            <TextBlock Text="{Binding Architecture}" FontSize="14" TextAlignment="Left"
+                                                       Foreground="DimGray" FontWeight="Thin"/>
+                                            <TextBlock Text="{Binding Description}" FontSize="14" TextAlignment="Left"
+                                                       Foreground="DimGray" FontWeight="Thin"/>
+                                        </StackPanel>
+                                    </Grid>
+                                </Grid>
+                            </Border>
+
+                            <Border Width="500" Height="500" Visibility="{Binding ApplicationInfoVisibility}">
+                                <Grid VerticalAlignment="Center">
+                                    <Grid.DataContext>
+                                        <viewModels:ApplicationInfoViewModel x:Name="ApplicationInfoViewModel"/>
+                                    </Grid.DataContext>
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="120"/>
+                                        <RowDefinition Height="72"/>
+                                        <RowDefinition/>
+                                    </Grid.RowDefinitions>
+                                    <Image Grid.Row="0" Source="{Binding LargeImage}" Width="100" Height="100"/>
+                                    <StackPanel Grid.Row="1" Orientation="Vertical" VerticalAlignment="Top">
+                                        <TextBlock Text="{Binding Name}" FontSize="24" TextAlignment="Center"
+                                           Foreground="Black" FontWeight="Normal"/>
+                                        <TextBlock Text="{Binding Type}" FontSize="20" TextAlignment="Center"
+                                           Foreground="DimGray" FontWeight="Thin"/>
+                                        <Line X1="60" Y1="5" X2="440" Y2="5" Stroke="Black"/>
+                                    </StackPanel>
+                                    <Grid Grid.Row="2">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition/>
+                                            <ColumnDefinition Width="20"/>
+                                            <ColumnDefinition/>
+                                        </Grid.ColumnDefinitions>
+                                        <StackPanel Grid.Column="0" HorizontalAlignment="Right" VerticalAlignment="Center">
+                                            <TextBlock Text="Version" FontSize="16" TextAlignment="Right"
+                                               Foreground="Black" FontWeight="Normal"/>
+                                            <TextBlock Text="Description" FontSize="16" TextAlignment="Right"
+                                               Foreground="Black" FontWeight="Normal"/>
+                                            <TextBlock Text="Language" FontSize="16" TextAlignment="Right"
+                                               Foreground="Black" FontWeight="Normal"/>
+                                            <TextBlock Text="Publisher" FontSize="16" TextAlignment="Right"
+                                               Foreground="Black" FontWeight="Normal"/>
+                                            <TextBlock Text="Size" FontSize="16" TextAlignment="Right"
+                                               Foreground="Black" FontWeight="Normal"/>
+                                            <TextBlock Text="Owner" FontSize="16" TextAlignment="Right"
+                                               Foreground="Black" FontWeight="Normal"/>
+                                            <TextBlock Text="Computer" FontSize="16" TextAlignment="Right"
+                                               Foreground="Black" FontWeight="Normal"/>
+                                            <TextBlock Text="Date created" FontSize="16" TextAlignment="Right"
+                                               Foreground="Black" FontWeight="Normal"/>
+                                            <TextBlock Text="Date accessed" FontSize="16" TextAlignment="Right"
+                                               Foreground="Black" FontWeight="Normal"/>
+                                            <TextBlock Text="Date modified" FontSize="16" TextAlignment="Right"
+                                               Foreground="Black" FontWeight="Normal"/>
+                                        </StackPanel>
+                                        <StackPanel Grid.Column="2" HorizontalAlignment="Left" VerticalAlignment="Center">
+                                            <TextBlock Text="{Binding Version}" FontSize="16" TextAlignment="Left"
+                                               Foreground="DimGray" FontWeight="Thin"/>
+                                            <TextBlock Text="{Binding Description}" FontSize="16" TextAlignment="Left"
+                                               Foreground="DimGray" FontWeight="Thin"/>
+                                            <TextBlock Text="{Binding Language}" FontSize="16" TextAlignment="Left"
+                                               Foreground="DimGray" FontWeight="Thin"/>
+                                            <TextBlock Text="{Binding Publisher}" FontSize="16" TextAlignment="Left"
+                                               Foreground="DimGray" FontWeight="Thin"/>
+                                            <TextBlock Text="{Binding Size}" FontSize="16" TextAlignment="Left"
+                                               Foreground="DimGray" FontWeight="Thin"/>
+                                            <TextBlock Text="{Binding Owner}" FontSize="16" TextAlignment="Left"
+                                               Foreground="DimGray" FontWeight="Thin"/>
+                                            <TextBlock Text="{Binding Computer}" FontSize="16" TextAlignment="Left"
+                                               Foreground="DimGray" FontWeight="Thin"/>
+                                            <TextBlock Text="{Binding CreationTime}" FontSize="16" TextAlignment="Left"
+                                               Foreground="DimGray" FontWeight="Thin"/>
+                                            <TextBlock Text="{Binding LastAccessTime}" FontSize="16" TextAlignment="Left"
+                                               Foreground="DimGray" FontWeight="Thin"/>
+                                            <TextBlock Text="{Binding LastWriteTime}" FontSize="16" TextAlignment="Left"
+                                               Foreground="DimGray" FontWeight="Thin"/>
+                                        </StackPanel>
+                                    </Grid>
+                                </Grid>
+                            </Border>
+
+                            <Border Width="500" Height="500" Visibility="{Binding SettingsInfoVisibility}">
+                                <Grid VerticalAlignment="Center">
+                                    <Grid.DataContext>
+                                        <viewModels:SettingsInfoViewModel x:Name="SettingsInfoViewModel"/>
+                                    </Grid.DataContext>
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="120"/>
+                                        <RowDefinition Height="94"/>
+                                        <RowDefinition/>
+                                    </Grid.RowDefinitions>
+                                    <Image Grid.Row="0" Source="{Binding LargeImage}" Width="100" Height="100"/>
+                                    <StackPanel Grid.Row="1" Orientation="Vertical" VerticalAlignment="Top">
+                                        <TextBlock Text="{Binding Name}" FontSize="24" TextAlignment="Center"
+                                           Foreground="Black" FontWeight="Normal"/>
+                                        <TextBlock Text="{Binding Type}" FontSize="20" TextAlignment="Center"
+                                           Foreground="DimGray" FontWeight="Thin"/>
+                                        <TextBlock Text="{Binding Path}" FontSize="16" TextAlignment="Center"
+                                           Foreground="DimGray" FontWeight="Thin"/>
+                                        <Line X1="60" Y1="7" X2="440" Y2="7" Stroke="Black"/>
+                                    </StackPanel>
+                                    <StackPanel Grid.Row="2">
+                                        <TextBlock Text="{Binding Description}" FontSize="16" TextAlignment="Left" Width="380"
+                                           Foreground="Black" TextWrapping="Wrap"/>
+                                        <TextBlock x:Name="SettingsHyperlinkTextBlock" Text="Learn more..." FontSize="16"
+                                           TextAlignment="Left" HorizontalAlignment="Left" Margin="60, 0, 0, 0" Width="92"
+                                           MouseLeftButtonUp="SettingsHyperlinkTextBlock_MouseLeftButtonUp">
+                                            <TextBlock.Style>
+                                                <Style TargetType="TextBlock">
+                                                    <Style.Triggers>
+                                                        <Trigger Property="IsMouseOver" Value="True">
+                                                            <Setter Property="Foreground" Value="Blue"/>
+                                                            <Setter Property="TextDecorations" Value="Underline"/>
+                                                            <Setter Property="Cursor" Value="Hand"/>
+                                                        </Trigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </TextBlock.Style>
+                                        </TextBlock>
+                                        <TextBlock Text="Have a question?" FontSize="20" TextAlignment="Left" Width="380"
+                                           Foreground="Black" TextWrapping="Wrap" Margin="0, 20, 0, 5"/>
+                                        <ListBox x:Name="SettingsQuestionsListBox" Width="380" ItemsSource="{Binding SettingsQuestions}"
+                                         BorderThickness="0" SelectionChanged="SettingsQuestionsListBox_SelectionChanged">
+                                            <ListBox.Style>
+                                                <Style TargetType="ListBox">
+                                                    <Setter Property="ItemContainerStyle">
+                                                        <Setter.Value>
+                                                            <Style TargetType="ListBoxItem">
+                                                                <Setter Property="Template">
+                                                                    <Setter.Value>
+                                                                        <ControlTemplate TargetType="ListBoxItem">
+                                                                            <Border>
+                                                                                <ContentPresenter/>
+                                                                            </Border>
+                                                                        </ControlTemplate>
+                                                                    </Setter.Value>
+                                                                </Setter>
+                                                            </Style>
+                                                        </Setter.Value>
+                                                    </Setter>
+                                                </Style>
+                                            </ListBox.Style>
+                                            <ListBox.ItemTemplate>
+                                                <DataTemplate>
+                                                    <TextBlock Text="{Binding Question}" FontSize="16">
+                                                        <TextBlock.Style>
+                                                            <Style TargetType="TextBlock">
+                                                                <Style.Triggers>
+                                                                    <Trigger Property="IsMouseOver" Value="True">
+                                                                        <Setter Property="Foreground" Value="Blue"/>
+                                                                        <Setter Property="TextDecorations" Value="Underline"/>
+                                                                        <Setter Property="Cursor" Value="Hand"/>
+                                                                    </Trigger>
+                                                                </Style.Triggers>
+                                                            </Style>
+                                                        </TextBlock.Style>
+                                                    </TextBlock>
+                                                </DataTemplate>
+                                            </ListBox.ItemTemplate>
+                                        </ListBox>
+                                    </StackPanel>
+                                </Grid>
+                            </Border>
+
+                            <Border Width="500" Height="500" Visibility="{Binding SystemInfoVisibility}">
+                                <Grid VerticalAlignment="Center">
+                                    <Grid.DataContext>
+                                        <viewModels:SystemInfoViewModel x:Name="SystemInfoViewModel"/>
+                                    </Grid.DataContext>
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="120"/>
+                                        <RowDefinition Height="72"/>
+                                        <RowDefinition/>
+                                    </Grid.RowDefinitions>
+                                    <Image Grid.Row="0" Source="{Binding LargeImage}" Width="100" Height="100"/>
+                                    <StackPanel Grid.Row="1" Orientation="Vertical" VerticalAlignment="Top">
+                                        <TextBlock Text="{Binding Name}" FontSize="24" TextAlignment="Center"
+                                           Foreground="Black" FontWeight="Normal"/>
+                                        <TextBlock Text="{Binding Type}" FontSize="20" TextAlignment="Center"
+                                           Foreground="DimGray" FontWeight="Thin"/>
+                                        <Line X1="60" Y1="5" X2="440" Y2="5" Stroke="Black"/>
+                                    </StackPanel>
+                                    <StackPanel Grid.Row="2">
+                                        <TextBlock Text="{Binding Description}" FontSize="16" TextAlignment="Left" Width="380"
+                                           Foreground="Black" TextWrapping="Wrap"/>
+                                        <TextBlock x:Name="SystemHyperlinkTextBlock" Text="Learn more..." FontSize="16"
+                                           TextAlignment="Left" HorizontalAlignment="Left" Margin="60, 0, 0, 0" Width="92"
+                                           MouseLeftButtonUp="SystemHyperlinkTextBlock_MouseLeftButtonUp">
+                                            <TextBlock.Style>
+                                                <Style TargetType="TextBlock">
+                                                    <Style.Triggers>
+                                                        <Trigger Property="IsMouseOver" Value="True">
+                                                            <Setter Property="Foreground" Value="Blue"/>
+                                                            <Setter Property="TextDecorations" Value="Underline"/>
+                                                            <Setter Property="Cursor" Value="Hand"/>
+                                                        </Trigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </TextBlock.Style>
+                                        </TextBlock>
+                                    </StackPanel>
+                                </Grid>
+                            </Border>
+
+                            <Border Width="500" Height="500" Visibility="{Binding WebServiceInfoVisibility}">
+                                <Grid VerticalAlignment="Center">
+                                    <Grid.DataContext>
+                                        <viewModels:WebServiceInfoViewModel x:Name="WebServiceInfoViewModel"/>
+                                    </Grid.DataContext>
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="120"/>
+                                        <RowDefinition Height="72"/>
+                                        <RowDefinition/>
+                                    </Grid.RowDefinitions>
+                                    <Image Grid.Row="0" Source="{Binding LargeImage}" Width="100" Height="100"/>
+                                    <StackPanel Grid.Row="1" Orientation="Vertical" VerticalAlignment="Top">
+                                        <TextBlock Text="{Binding Name}" FontSize="24" TextAlignment="Center"
+                                           Foreground="Black" FontWeight="Normal"/>
+                                        <TextBlock Text="{Binding Type}" FontSize="20" TextAlignment="Center"
+                                           Foreground="DimGray" FontWeight="Thin"/>
+                                        <Line X1="60" Y1="5" X2="440" Y2="5" Stroke="Black"/>
+                                    </StackPanel>
+                                    <StackPanel Grid.Row="2">
+                                        <TextBlock Text="{Binding Description}" FontSize="16" TextAlignment="Left" Width="380"
+                                           Foreground="Black" TextWrapping="Wrap"/>
+                                        <TextBlock x:Name="WebServiceHyperlinkTextBlock" Text="Learn more..." FontSize="16"
+                                           TextAlignment="Left" HorizontalAlignment="Left" Margin="60, 0, 0, 0" Width="92"
+                                           MouseLeftButtonUp="WebServiceHyperlinkTextBlock_MouseLeftButtonUp">
+                                            <TextBlock.Style>
+                                                <Style TargetType="TextBlock">
+                                                    <Style.Triggers>
+                                                        <Trigger Property="IsMouseOver" Value="True">
+                                                            <Setter Property="Foreground" Value="Blue"/>
+                                                            <Setter Property="TextDecorations" Value="Underline"/>
+                                                            <Setter Property="Cursor" Value="Hand"/>
+                                                        </Trigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </TextBlock.Style>
+                                        </TextBlock>
+                                    </StackPanel>
+                                </Grid>
+                            </Border>
+                        </Grid>
+                    </Border>
+                </Grid>
+            </Grid>
+        </Grid>
+    </Border>
+</Window>
